@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E.S.C IPTV PRÓ - CONTROLE ADMINISTRATIVO</title>
+    <style>
+        :root {
+            --bg-primary: #121214;
+            --bg-secondary: #202024;
+            --accent: #8257e5;
+            --promo-color: #ffb800;
+            --text-color: #e1e1e6;
+            --text-muted: #a8a8b3;
+            --success: #49b4bb;
+            --danger: #f75a68;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-primary); color: var(--text-color); padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        header {
+            text-align: center; margin-bottom: 30px; padding: 25px;
+            background: var(--bg-secondary); border-radius: 8px; border-left: 5px solid var(--accent);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-box {
+            background: var(--bg-secondary); padding: 20px;
+            border-radius: 8px; margin-bottom: 25px; border: 1px solid #323238;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; }
+        input { width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid #323238; color: white; border-radius: 6px; font-size: 15px; }
+        
+        button.btn-submit {
+            background: var(--accent); color: white; border: none; padding: 12px 20px;
+            border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px;
+        }
+
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 768px) { .grid-inputs { grid-template-columns: 1fr; } }
+
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #323238; font-size: 14px; }
+        th { color: var(--text-muted); }
+
+        .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status.pago { background: rgba(73, 180, 187, 0.2); color: var(--success); }
+        .status.gratis { background: rgba(255, 184, 0, 0.2); color: var(--promo-color); }
+        .status.pendente { background: rgba(255, 117, 0, 0.2); color: #ff7500; }
+        .status.vencido { background: rgba(247, 90, 104, 0.2); color: var(--danger); }
+
+        .code-tag {
+            background: #29292e; padding: 5px 10px; border-radius: 4px; border: 1px solid var(--promo-color);
+            display: inline-block; margin: 5px; font-family: monospace; font-size: 14px; cursor: pointer;
+        }
+
+        #loginArea { max-width: 400px; margin: 100px auto 0 auto; }
+        .btn-logout {
+            background: none; border: 1px solid var(--danger); color: var(--danger);
+            padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;
+            float: right; margin-top: -58px; transition: 0.2s;
+        }
+        .btn-logout:hover { background: var(--danger); color: white; }
+    </style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN RESTRITA -->
+<div id="loginArea" class="section-box">
+    <h2 style="text-align: center; margin-bottom: 20px; font-size: 20px;">E.S.C IPTV PRÓ <br><span style="font-size: 14px; color: var(--text-muted);">Painel de Controle Restrito</span></h2>
+    <form id="loginForm">
+        <div class="form-group">
+            <label>Usuário Administrador</label>
+            <input type="text" id="adminUser" placeholder="Digite o usuário">
+        </div>
+        <div class="form-group">
+            <label>Senha</label>
+            <input type="password" id="adminPassword" placeholder="Digite a senha">
+        </div>
+        <button type="button" class="btn-submit" onclick="handleLogin()">Entrar no Sistema</button>
+    </form>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL DO PAINEL -->
+<div class="container" id="mainDashboard" style="display: none;">
+    <header>
+        <h1>E.S.C IPTV PRÓ - Controle Administrativo</h1>
+        <p>Gerenciamento e monitoramento exclusivo de clientes cadastrados</p>
+        <button class="btn-logout" onclick="handleLogout()">Sair</button>
+    </header>
+
+    <!-- Cadastro de Clientes -->
+    <div class="section-box">
+        <h2>Cadastrar Novo Cliente</h2>
+        <form style="margin-top: 15px;">
+            <div class="grid-inputs">
+                <div class="form-group">
+                    <label>Nome do Cliente</label>
+                    <input type="text" id="clientName" required placeholder="Ex: João Silva">
+                </div>
+                <div class="form-group">
+                    <label>Celular / WhatsApp (Apenas números)</label>
+                    <input type="tel" id="clientPhone" required placeholder="Ex: 11999999999">
+                </div>
+                <div class="form-group">
+                    <label>Login IPTV do Cliente</label>
+                    <input type="text" id="iptvUser" required placeholder="Ex: joao.iptv">
+                </div>
+                <div class="form-group">
+                    <label>Senha IPTV do Cliente</label>
+                    <input type="text" id="iptvPass" required placeholder="Ex: net123">
+                </div>
+            </div>
+            <button type="button" class="btn-submit" onclick="addClient()">Salvar e Iniciar Cadastro</button>
+        </form>
+    </div>
+
+    <!-- Gerador de Códigos Gratuitos -->
+    <div class="section-box" style="border-color: var(--promo-color);">
+        <h2 style="color: var(--promo-color);">🎁 Códigos de Recompensa (Acesso Grátis)</h2>
+        <p style="font-size: 13px; margin-bottom: 15px;">Gere chaves promocionais de 30 dias de presente para enviar aos clientes.</p>
+        <button type="button" class="btn-submit" style="background: var(--promo-color); color: black;" onclick="generatePromoCode()">Gerar Novo Código Grátis</button>
+        
+        <div style="margin-top: 15px;">
+            <strong>Códigos Disponíveis (Clique para Copiar):</strong>
+            <div id="availableCodes" style="margin-top: 5px;"></div>
+        </div>
+    </div>
+
+    <!-- Lista de Clientes -->
+    <h2>Lista de Clientes Cadastrados</h2>
+    <div class="section-box" style="padding: 10px;">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Celular</th>
+                        <th>Login IPTV</th>
+                        <th>Senha IPTV</th>
+                        <th>Vencimento</th>
+                        <th>Tempo Restante</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="clientTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Usuário e senha padrão do painel
+    const AUTH_USER = "admin";
+    const AUTH_PASS = "123456";
+
+    let database = JSON.parse(localStorage.getItem('iptv_app_db_v2')) || [];
+    let promoCodes = JSON.parse(localStorage.getItem('iptv_promo_codes')) || [];
+
+    window.onload = function() {
+        if (sessionStorage.getItem('admin_authenticated') === 'true') {
+            showDashboard();
+        }
+    }
+
+    function handleLogin() {
+        const userIn = document.getElementById('adminUser').value.trim();
+        const passIn = document.getElementById('adminPassword').value;
+
+        if (userIn === AUTH_USER && passIn === AUTH_PASS) {
+            sessionStorage.setItem('admin_authenticated', 'true');
+            showDashboard();
+        } else {
+            alert('Usuário ou senha incorretos! Acesso negado.');
+        }
+    }
+
+    function showDashboard() {
+        document.getElementById('loginArea').style.display = 'none';
+        document.getElementById('mainDashboard').style.display = 'block';
+        renderAdminTable();
+        renderPromoCodes();
+    }
+
+    function handleLogout() {
+        sessionStorage.removeItem('admin_authenticated');
+        location.reload();
+    }
+
+    function sync() {
+        localStorage.setItem('iptv_app_db_v2', JSON.stringify(database));
+        localStorage.setItem('iptv_promo_codes', JSON.stringify(promoCodes));
+        renderAdminTable();
+        renderPromoCodes();
+    }
+
+    function getTimeRemaining(expiryDateStr) {
+        const expiry = new Date(expiryDateStr);
+        const today = new Date();
+        const diffMs = expiry - today;
+        
+        if (diffMs <= 0) return { expired: true, text: 'Expirado' };
+
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (diffDays > 0) {
+            return { expired: false, text: `${diffDays} dias` };
+        } else {
+            return { expired: false, text: `${diffHours}h ${diffMinutes}min` };
+        }
+    }
+
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth()+1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+
+    function addClient() {
+        const name = document.getElementById('clientName').value.trim();
+        const phone = document.getElementById('clientPhone').value.replace(/\D/g, '');
+        const iptvUser = document.getElementById('iptvUser').value.trim();
+        const iptvPass = document.getElementById('iptvPass').value.trim();
+
+        if (!name || !phone || !iptvUser || !iptvPass) {
+            return alert('Preencha todos os campos para cadastrar o cliente.');
+        }
+        if (database.some(c => c.phone === phone)) return alert('Este celular já está cadastrado!');
+
+        // Por padrão inicia com 30 dias na lógica local estável
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 30);
+
+        database.push({
+            id: Date.now(), name, phone, iptvUser, iptvPass, price: "35.00",
+            expiryDate: expiryDate.toISOString(), status: 'Pago', planType: 'Mensal Padrão'
+        });
+
+        document.getElementById('clientName').value = '';
+        document.getElementById('clientPhone').value = '';
+        document.getElementById('iptvUser').value = '';
+        document.getElementById('iptvPass').value = '';
+        
+        sync();
+        alert('Cliente cadastrado com sucesso!');
+    }
+
+    function generatePromoCode() {
+        const randomStr = Math.random().toString(36).substring(2, 7).toUpperCase();
+        const code = `IPTV-GRATIS-${randomStr}`;
+        promoCodes.push(code);
+        sync();
+    }
+
+    function renderPromoCodes() {
+        const container = document.getElementById('availableCodes');
+        if(promoCodes.length === 0) { container.innerHTML = '<span style="color:var(--text-muted); font-size:13px;">Nenhum código gerado.</span>'; return; }
+        container.innerHTML = '';
+        promoCodes.forEach(code => {
+            container.innerHTML += `<span class="code-tag" onclick="navigator.clipboard.writeText('${code}'); alert('Copiado!');">${code} 📋</span>`;
+        });
+    }
+
+    function deleteClient(id) {
+        if(confirm('Remover este cliente permanentemente?')) { database = database.filter(c => c.id !== id); sync(); }
+    }
+
+    function alterStatus(id, newStatus) {
+        database = database.map(c => {
+            if (c.id === id) {
+                c.status = newStatus;
+                if (newStatus === 'Pago') {
+                    const extra = new Date();
+                    extra.setDate(extra.getDate() + 30);
+                    c.expiryDate = extra.toISOString();
+                }
+            }
+            return c;
+        });
+        sync();
+    }
+
+    function renderAdminTable() {
+        const tbody = document.getElementById('clientTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        database.forEach(client => {
+            const timeRemaining = getTimeRemaining(client.expiryDate);
+            let currentStatus = client.status; let statusClass = 'pendente';
+            
+            if (timeRemaining.expired) { currentStatus = 'Vencido'; statusClass = 'vencido'; }
+            else if (client.status === 'Pago') statusClass = 'pago';
+            else if (client.status === 'Grátis (Recompensa)') statusClass = 'gratis';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${client.name}</strong></td>
+                    <td>${client.phone}</td>
+                    <td style="font-family: monospace; color: var(--accent); font-weight: bold;">${client.iptvUser}</td>
+                    <td style="font-family: monospace;">${client.iptvPass}</td>
+                    <td>${formatDate(client.expiryDate)}</td>
+                    <td>${timeRemaining.text}</td>
+                    <td><span class="status ${statusClass}">${currentStatus}</span></td>
+                    <td>
+                        <button onclick="alterStatus(${client.id}, 'Pago')" style="background:none; border:none; color:var(--success); cursor:pointer; font-weight:bold; margin-right:8px;">Renovar</button>
+                        <button onclick="deleteClient(${client.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;">Remover</button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    window.addEventListener('storage', () => {
+        database = JSON.parse(localStorage.getItem('iptv_app_db_v2')) || [];
+        promoCodes = JSON.parse(localStorage.getItem('iptv_promo_codes')) || [];
+        if (sessionStorage.getItem('admin_authenticated') === 'true') {
+            renderAdminTable();
+            renderPromoCodes();
+        }
+    });
+</script>
+</body>
+</html>
